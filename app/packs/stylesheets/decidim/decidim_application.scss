@@ -1,0 +1,19 @@
+// This is a file that can be overridden by the application in order to override styles
+// Notice that this file is included at the very end of the stylesheets packs to have
+// more priority
+//
+// To override CSS variables or Foundation settings use _decidim-settings.scss
+//
+// By default this is empty.
+//@import "../application";
+
+@import "../govbr-ds/core";
+@import "../govbr-ds/main";
+@import "../govbr-ds/collapse.scss";
+@import "../govbr-ds/news-style";
+@import "../govbr-ds/participatory-text.scss";
+@import ".././govbr-ds/pagination.scss";
+@import "../custom/proposals.scss";
+@import "../govbr-ds/filter.scss";
+@import "../custom/statistics.scss";
+@import "../custom/tts.scss";
