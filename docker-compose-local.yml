@@ -1,4 +1,3 @@
-# TODO(leomichalski): apos separar sidekiq, ver se esta funcionando
 version: "3"
 
 volumes:
@@ -9,7 +8,6 @@ volumes:
   local-certbot-conf: {}
 
 services:
-  # TODO(leomichalski): sidekiq service
   postgres:
     image: postgres:14.10-alpine
     container_name: local-db
@@ -33,10 +31,10 @@ services:
       - redis-queue
       - redis-cache
     ports:
-      - 3035:3035
       - 3000:3000
-      - 1080:1080
-      - 1025:1025
+      - 3035:3035  # webpack
+      - 1080:1080  # mailcatcher
+      - 1025:1025  # smtp
     networks:
       - local-app-network
     environment:
@@ -77,6 +75,29 @@ services:
       - local-redis-cache-data:/data:rw
     env_file:
       - .envs/local/redis_cache  # defines REDIS_CACHE_PORT
+
+  sidekiq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: local-sidekiq
+    container_name: local-sidekiq
+    depends_on:
+      - postgres
+      - redis-queue
+      - redis-cache
+    command: bundle exec sidekiq
+    networks:
+      - local-app-network
+    environment:
+      - RAILS_ENV=development
+      - RACK_ENV=development
+      - NODE_ENV=development
+    env_file:
+      - .envs/local/redis_queue  # uri
+      - .envs/local/redis_cache  # uri
+      - .envs/local/decidim_service
+      - .envs/local/hostname
 
 networks:
   local-app-network:

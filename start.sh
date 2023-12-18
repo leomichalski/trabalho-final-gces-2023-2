@@ -32,9 +32,6 @@ fi
 # subir mailcatcher
 mailcatcher --http-ip=0.0.0.0 &
 
-# subir sidekiq
-bundle exec sidekiq & 
-
 # subir rails
 # if [[ $RAILS_ENV == "development" ]]; then
 mkdir -p tmp/pids
