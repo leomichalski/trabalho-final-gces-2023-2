@@ -16,7 +16,6 @@ SMTP_ADDRESS=address
 SMTP_PORT=port
 SMTP_DOMAIN=domain
 
-# TODO(leomichalski): separate sidekiq
 SIDEKIQ_CONCURRENCY=2
 
 RAILS_SERVE_STATIC_FILES=true
