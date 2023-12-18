@@ -4,15 +4,11 @@ DECIDIM_DEFAULT_LOCALE=en
 DECIDIM_AVAILABLE_LOCALES=en,pt-BR
 DECIDIM_ENABLE_HTML_HEADER_SNIPPETS=true
 DECIDIM_CURRENCY_UNIT=R$
-DECIDIM_FORCE_SSL=true
+DECIDIM_FORCE_SSL=false
 
 MEETINGS_EMBEDDABLE_SERVICES=youtube.com twitch.tv meet.jit.si
 
 INITIATIVES_DEFAULT_COMPONENTS=meetings
-
-DATABASE_URL=postgres://decide:decide@127.0.0.1/decide?pool=5
-#REDIS_URL=redis://redis-queue:6379
-#REDIS_CACHE_URL=redis://redis-queue:6380
 
 SMTP_USERNAME=username
 SMTP_PASSWORD=password
@@ -20,12 +16,8 @@ SMTP_ADDRESS=address
 SMTP_PORT=port
 SMTP_DOMAIN=domain
 
+# TODO(leomichalski): separate sidekiq
 SIDEKIQ_CONCURRENCY=2
-
-ALLOW_HOSTS=.decide.local
-
-ADMIN_USERNAME=admin-username
-ADMIN_PASSWORD=admin-password
 
 RAILS_SERVE_STATIC_FILES=true
 

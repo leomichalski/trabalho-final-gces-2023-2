@@ -1,0 +1,3 @@
+ADMIN_USERNAME=admin-username
+ADMIN_EMAIL=admin@email.com
+CERT_EMAIL=${ADMIN_EMAIL}
