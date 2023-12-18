@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+
 set -e
 
 # runs db:drop, db:create and db:migrate.
@@ -13,8 +14,17 @@ set -e
 
 rm -f tmp/pids/server.pid
 
-bundle check || bundle install
+# bundle check || bundle install
 
+# webpack
+bundle exec rails assets:precompile
+bundle exec rails webpacker:compile
+
+if [[ $RAILS_ENV == "development" ]]; then
+  bash scripts/start_webpack_dev.sh &
+fi
+
+# mexer no banco de dados
 if bundle exec rails db:exists; then
   bundle exec rails db:migrate
 else
@@ -23,7 +33,11 @@ else
   bundle exec rails db:seed
 fi
 
+# subir mailcatcher
 mailcatcher --http-ip=0.0.0.0 &
+
+# subir sidekiq
 bundle exec sidekiq & 
-bash scripts/start_webpack_dev.sh & 
-bundle exec rails s -p 3000 -b 0.0.0.0
+
+# subir rails
+bundle exec puma -C config/puma.rb

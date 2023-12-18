@@ -1,0 +1,3 @@
+# ALLOW_HOSTS="/.*/"
+# ALLOW_HOSTS=.decide.local
+ALLOW_HOSTS=/.*/
