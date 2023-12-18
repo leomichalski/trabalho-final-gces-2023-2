@@ -12,10 +12,6 @@ set -e
 
 #exec "$@"
 
-rm -f tmp/pids/server.pid
-
-# bundle check || bundle install
-
 # webpack
 bundle exec rails assets:precompile
 bundle exec rails webpacker:compile
@@ -40,4 +36,10 @@ mailcatcher --http-ip=0.0.0.0 &
 bundle exec sidekiq & 
 
 # subir rails
+# if [[ $RAILS_ENV == "development" ]]; then
+mkdir -p tmp/pids
+touch tmp/pids/server.pid
 bundle exec puma -C config/puma.rb
+# else
+  # bundle exec puma -C setup/puma.production.rb
+# fi
