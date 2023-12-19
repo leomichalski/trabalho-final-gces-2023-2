@@ -23,7 +23,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     image: local-app
     container_name: local-app
     depends_on:
@@ -79,7 +79,7 @@ services:
   sidekiq:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     image: local-sidekiq
     container_name: local-sidekiq
     depends_on:

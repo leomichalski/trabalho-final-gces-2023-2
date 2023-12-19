@@ -16,6 +16,10 @@ set -e
 bundle exec rails assets:precompile
 bundle exec rails webpacker:compile
 
+if [[ $RAILS_ENV == "development" ]]; then
+  bash scripts/start_webpack_dev.sh &
+fi
+
 # mexer no banco de dados
 if bundle exec rails db:exists; then
   bundle exec rails db:migrate
@@ -25,13 +29,9 @@ else
   bundle exec rails db:seed
 fi
 
-# already created by docker volume
-# mkdir -p log
-touch log/puma.stdout.log
+# subir mailcatcher
+mailcatcher --http-ip=0.0.0.0 &
 
-# already created by docker volume
-# mkdir -p tmp/pids
-touch tmp/pids/puma.pid
-touch tmp/pids/puma.state
-
-bundle exec puma -C setup/puma/puma.production.rb
+mkdir -p tmp/pids
+touch tmp/pids/server.pid
+bundle exec puma -C config/puma.rb
