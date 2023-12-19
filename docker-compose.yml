@@ -1,0 +1,149 @@
+version: "3"
+
+volumes:
+  production-redis-queue-data: {}
+  production-redis-cache-data: {}
+  production-postgres-data: {}
+  production-certbot-www: {}
+  production-certbot-conf: {}
+  production-app-pids: {}
+  production-app-log: {}
+  production-nginx-log: {}
+  production-app-static: {}
+
+
+services:
+  postgres:
+    image: postgres:14.10-alpine
+    container_name: production-db
+    networks:
+      - production-app-network
+    volumes:
+      - production-postgres-data:/var/lib/postgresql/data:rw
+    env_file:
+      - .envs/production/database
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: production-app
+    container_name: production-app
+    depends_on:
+      - postgres
+      - redis-queue
+      - redis-cache
+    networks:
+      - production-app-network
+      - production-nginx-network
+    volumes:
+      - production-app-pids:/decidim-govbr/tmp/pids:rw
+      - production-app-log:/decidim-govbr/log:rw
+      - production-app-static:/decidim-govbr/public:rw
+    environment:
+      - RAILS_ENV=production
+      - RACK_ENV=production
+      - NODE_ENV=production
+    env_file:
+      - .envs/production/database
+      - .envs/production/admin
+      - .envs/production/admin_password
+      - .envs/production/redis_queue  # uri
+      - .envs/production/redis_cache  # uri
+      - .envs/production/decidim_service
+      - .envs/production/hostname
+
+  redis-queue:
+    image: redis:6.0-alpine
+    container_name: production-redis-queue
+    command: sh -c "redis-server --port $${REDIS_PORT}"
+    networks:
+      - production-app-network
+    volumes:
+      - production-redis-queue-data:/data:rw
+    env_file:
+      - .envs/production/redis_queue  # defines REDIS_PORT
+
+  redis-cache:
+    image: redis:6.0-alpine
+    container_name: production-redis-cache
+    command: sh -c "redis-server --port $${REDIS_CACHE_PORT}"
+    networks:
+      - production-app-network
+    volumes:
+      - production-redis-cache-data:/data:rw
+    env_file:
+      - .envs/production/redis_cache  # defines REDIS_CACHE_PORT
+
+  sidekiq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: production-sidekiq
+    container_name: production-sidekiq
+    depends_on:
+      - postgres
+      - redis-queue
+      - redis-cache
+    command: bundle exec sidekiq -e production
+    networks:
+      - production-app-network
+    environment:
+      - RAILS_ENV=production # just to avoid misconfigs
+      - RACK_ENV=production # just to avoid misconfigs
+      - NODE_ENV=production # just to avoid misconfigs
+    env_file:
+      - .envs/production/redis_queue  # uri
+      - .envs/production/redis_cache  # uri
+      - .envs/production/decidim_service
+      - .envs/production/hostname
+
+  nginx:
+    build:
+      context: ./setup/nginx
+      dockerfile: ./Dockerfile
+    image: production-nginx
+    container_name: production-nginx
+    restart: "always"
+    env_file:
+      - ./.envs/production/hostname
+    ports:
+      - '80:80'
+      - "443:443/tcp"
+      # - "443:443/udp"
+    networks:
+      - production-nginx-network
+    volumes:
+      - production-certbot-www:/var/www/certbot/:ro
+      - production-certbot-conf:/etc/nginx/ssl/:ro
+      - production-nginx-log:/var/log/nginx:rw
+      - production-app-static:/static:ro
+    healthcheck:
+      test: ps | grep "nginx" | grep "worker process" | grep -v "grep"
+      interval: 10s
+      retries: 10
+      start_period: 3s
+      timeout: 5s
+
+  certbot:
+    build:
+      context: ./setup/certbot
+      dockerfile: ./Dockerfile
+    image: production-certbot
+    container_name: production-certbot
+    restart: "always"
+    depends_on:
+      nginx:
+        condition: service_healthy
+    env_file:
+      - ./.envs/production/hostname
+      - ./.envs/production/admin
+    volumes:
+      - production-certbot-www:/var/www/certbot/:rw
+      - production-certbot-conf:/etc/letsencrypt/:rw
+
+networks:
+  production-app-network:
+    driver: bridge
+  production-nginx-network:
+    driver: bridge

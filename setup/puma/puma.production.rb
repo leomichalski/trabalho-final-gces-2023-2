@@ -1,17 +1,20 @@
 # Change to match your CPU core count
-workers 16
+workers 2
 
 # Min and Max threads per worker
 threads 10, 20
 
-app_dir = "/srv/decide"
+app_dir = "/decidim-govbr"
+
+# # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
+# port ENV.fetch('PORT', 3000)
 
 # Default to production
 rails_env = ENV['RAILS_ENV'] || "production"
 environment rails_env
 
 # Set up socket location
-bind "unix://#{app_dir}/tmp/sockets/puma.sock"
+bind "tcp://0.0.0.0:#{ENV['PORT'] || 3000}"
 
 # Logging
 stdout_redirect "#{app_dir}/log/puma.stdout.log", "#{app_dir}/log/puma.stderr.log", true
