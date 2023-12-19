@@ -1,0 +1,38 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/*'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/*'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: |
+          docker compose -f docker-compose-local.yml build
+
+      - name: Test
+        run: |
+          docker compose -f docker-compose-local.yml run --rm -it app bash -c "bundle exec rails test"
+
+      - name: Lint
+        run: |
+          docker compose -f docker-compose-local.yml run --rm -it app bash -c "bundle exec rubocop --fail-level F"
+
+      # TODO: only run CD pipeline if tests pass
