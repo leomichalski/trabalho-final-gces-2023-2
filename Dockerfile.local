@@ -35,11 +35,8 @@ COPY Gemfile Gemfile
 COPY Gemfile.lock Gemfile.lock
 
 RUN gem install bundler mailcatcher --no-document
+# # RUN bundle config set without 'development test' \
 RUN bundle install
-
-# TODO: dont install 'development test' in production
-# RUN bundle config set without 'development test' \
-#     bundle install
 
 COPY package.json package.json
 COPY yarn.lock yarn.lock
@@ -76,6 +73,6 @@ COPY tasks.sh tasks.sh
 # assert `yarn install` is right after copying the rest of the files
 RUN yarn check
 
-COPY --chmod=0744 start.sh ./start.sh
+COPY --chmod=0744 start.local.sh ./start.local.sh
 
-CMD ["./start.sh"]
+CMD ["./start.local.sh"]
