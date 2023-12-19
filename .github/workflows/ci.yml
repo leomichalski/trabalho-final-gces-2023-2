@@ -27,12 +27,17 @@ jobs:
         run: |
           docker compose -f docker-compose-local.yml build
 
+      - name: Setup database
+        run: |
+          docker compose -f docker-compose-local.yml run --rm app bash -c "
+            bundle exec rails db:create &&
+            bundle exec rails db:migrate
+          "
+
       - name: Test
         run: |
-          docker compose -f docker-compose-local.yml run --rm -it app bash -c "bundle exec rails test"
+          docker compose -f docker-compose-local.yml run --rm app bash -c "bundle exec rails test"
 
       - name: Lint
         run: |
-          docker compose -f docker-compose-local.yml run --rm -it app bash -c "bundle exec rubocop --fail-level F"
-
-      # TODO: only run CD pipeline if tests pass
+          docker compose -f docker-compose-local.yml run --rm app bash -c "bundle exec rubocop --fail-level F"
